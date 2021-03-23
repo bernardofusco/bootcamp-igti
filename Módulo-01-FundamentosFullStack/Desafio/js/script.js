@@ -1,98 +1,133 @@
 const personFilter = document.getElementById('personFilter');
 const busca = document.getElementById('busca');
-let tabSearchedUsers = document.getElementById('tabSearchedUsers');
-let search = [];
-let usersArray = [];
-let findedUsers = [];
+const form = document.querySelector('form');
+const tabStatistics = document.getElementById('tabStatistics');
+const tabSearchedUsers = document.getElementById('tabSearchedUsers');
 
-async function start() {
+let usersArray = [];
+let filteredUsers = [];
+
+const minInputSize = 1;
+const enableBuscaClass = 'bg-green-500';
+
+async function readUsersBackEnd() {
   const resource = await fetch('http://localhost:3001/users');
   const users = await resource.json();
-  usersArray = renderUsers(users);
-
-  personFilter.addEventListener('keyup', () => {
-    search = personFilter.value;
-    console.log(search);
+  usersArray = users.map(({ login, name, dob, gender, picture }) => {
+    const fullName = `${name.first} ${name.last}`;
+    const searchName = fullName.toLocaleLowerCase();
+    return {
+      id: login.uuid,
+      name: fullName,
+      searchName,
+      age: dob.age,
+      gender: gender,
+      picture: picture.medium,
+    };
   });
+  /*Usando spread para as duas variáveis não ocuparem o mesmo lugar na memória*/
+  filteredUsers = [...usersArray];
+}
 
-  personFilter.addEventListener(
-    'keypress',
-    function (e) {
-      if (e.which == 13) {
-        findedUsers = usersArray.filter((pessoa) =>
-          pessoa.name.toLowerCase().includes(search.toLowerCase())
-        );
-        render();
-      }
-    },
-    false
-  );
+function enableControls() {
+  personFilter.disabled = false;
+  personFilter.focus();
+}
 
-  busca.addEventListener('click', () => {
-    findedUsers = usersArray.filter((pessoa) =>
-      pessoa.name.toLowerCase().includes(search.toLowerCase())
-    );
-    render();
+function enableEvents() {
+  personFilter.addEventListener('input', ({ currentTarget }) => {
+    const shouldEnable = currentTarget.value.length >= minInputSize;
+    busca.disabled = !shouldEnable;
+
+    if (shouldEnable) busca.classList.add(enableBuscaClass);
+    else busca.classList.remove(enableBuscaClass);
+  });
+  form.addEventListener('submit', (event) => {
+    event.preventDefault();
+    const searchTerm = personFilter.value;
+    doFilter(searchTerm);
   });
 }
 
-function renderUsers(users) {
-  const temp = users.map((person) => {
-    return {
-      name: person.name.first + ' ' + person.name.last,
-      image: person.picture.thumbnail,
-      age: person.dob.age,
-      gender: person.gender,
-    };
-  });
-  return temp;
+function doFilter(searchTerm) {
+  const lowerSearchTerm = searchTerm.toLocaleLowerCase();
+
+  filteredUsers = usersArray
+    .filter((user) => user.searchName.includes(lowerSearchTerm))
+    .sort((a, b) => a.name.localeCompare(b.name));
+
+  render();
+}
+
+function renderStatistics() {
+  if (filteredUsers.length === 0) {
+    tabStatistics.textContent = 'Nada a ser exibido!';
+    return;
+  }
+
+  //prettier-ignore
+  const mascCont =
+  filteredUsers.filter(({ gender }) => gender === 'male').length;
+
+  //prettier-ignore
+  const femaleCont =
+  filteredUsers.filter(({ gender }) => gender === 'female').length;
+
+  const totalAges = filteredUsers.reduce(
+    (accumulator, { age }) => accumulator + age,
+    0
+  );
+
+  const media = (totalAges / filteredUsers.length).toFixed(2).replace('.', ',');
+
+  tabStatistics.innerHTML = `
+    <h2 class="margin-auto text-center text-xl font-semibold mb-2">
+      Estatísticas
+    </h2>
+    <ul>
+      <li>Sexo Masculino: <strong>${mascCont}</strong></li>
+      <li>Sexo Feminino: <strong>${femaleCont}</strong></li>
+      <li>Soma das idades: <strong>${totalAges}</strong></li>
+      <li>Média das idades: <strong>${media}</strong></li>
+    </ul>
+  `;
+}
+
+function renderUsers() {
+  if (filteredUsers.length === 0) {
+    tabSearchedUsers.textContent = 'Nenhum usuário encontrado!';
+    return;
+  }
+
+  tabSearchedUsers.innerHTML = `
+    <h2 class="margin-auto text-center text-xl font-semibold mb-2">
+      ${filteredUsers.length} usuários encontrado(s)
+    </h2>
+
+    <ul>
+      ${filteredUsers
+        .map((user) => {
+          return `
+          <li class="flex flex-row items-center mb-2 space-x-4">
+            <img class="rounded-full" src="${user.picture}" alt="${user.name} title="${user.name}" />
+            <span> ${user.name}, ${user.age} anos</span>
+          </li>
+        `;
+        })
+        .join('')}
+    </ul>
+  `;
 }
 
 function render() {
-  searchedUsers();
-  renderEstatistcs();
+  renderStatistics();
+  renderUsers();
 }
 
-function searchedUsers() {
-  let testeHTML = '<div>';
-  findedUsers.forEach((person) => {
-    const { name, image, age } = person;
-    const personHTML = `
-    <div>
-      <div>
-        <img src="${image}" alt="${name}">
-      </div>
-      <div>
-        <ul>
-          <li>${name}</li>
-          <li>${age}</li>
-        </ul>
-      </div>
-    </div>
-    `;
-    testeHTML += personHTML;
-  });
-  testeHTML += '</div>';
-  tabSearchedUsers.innerHTML = testeHTML;
-}
-
-function renderEstatistcs() {
-  let genderMasc = 0;
-  let genderFem = 0;
-  findedUsers.forEach((person) => {
-    if (person.gender === 'male') genderMasc++;
-    else if (person.gender === 'female') genderFem++;
-  });
-  console.log('Genders');
-  console.log(genderMasc);
-  console.log(genderFem);
-
-  const totalAges = findedUsers.reduce((accumulator, current) => {
-    return accumulator + current.age;
-  }, 0);
-  console.log(totalAges);
-  const mediaIdades = totalAges / (genderMasc + genderFem);
-  console.log(mediaIdades);
+async function start() {
+  await readUsersBackEnd();
+  enableControls();
+  enableEvents();
 }
 
 start();
