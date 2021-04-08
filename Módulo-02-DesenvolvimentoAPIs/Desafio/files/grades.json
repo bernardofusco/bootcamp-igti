@@ -1,14 +1,6 @@
 {
-  "nextId": 49,
+  "nextId": 51,
   "grades": [
-    {
-      "id": 1,
-      "student": "Loiane Groner",
-      "subject": "01 - JavaScript",
-      "type": "Fórum",
-      "value": 15,
-      "timestamp": "2020-05-19T18:21:24.958Z"
-    },
     {
       "id": 2,
       "student": "Loiane Groner",
@@ -48,14 +40,6 @@
       "type": "Trabalho Prático",
       "value": 24,
       "timestamp": "2020-05-19T18:21:24.987Z"
-    },
-    {
-      "id": 7,
-      "student": "Loiane Groner",
-      "subject": "03 - React",
-      "type": "Trabalho Prático",
-      "value": 2,
-      "timestamp": "2020-05-19T18:21:24.993Z"
     },
     {
       "id": 8,
