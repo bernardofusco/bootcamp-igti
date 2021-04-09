@@ -12,22 +12,60 @@ export default class App extends Component {
     const res = await fetch('https://restcountries.eu/rest/v2/all');
     const json = await res.json();
     const allCountries = json.map(({ name, numericCode, flag, population }) => {
-      return { id: numericCode, name, flag, population };
+      return {
+        id: numericCode,
+        name,
+        filterName: name.toLowerCase(),
+        filterPopulation: 0,
+        flag,
+        population,
+      };
     });
-    this.setState({ allCountries, filteredCountries: allCountries });
+
+    const filteredPopulation = this.calculateTotalPopulationFrom(allCountries);
+
+    this.setState({
+      allCountries,
+      filteredCountries: Object.assign([], allCountries),
+      filteredPopulation,
+    });
   }
+
+  calculateTotalPopulationFrom = (countries) => {
+    const totalPopulation = countries.reduce((accumulator, current) => {
+      return accumulator + current.population;
+    }, 0);
+    return totalPopulation;
+  };
+
   handleChangeFilter = (newText) => {
     this.setState({ filter: newText });
+    const filteredLowerCase = newText.toLowerCase();
+    const filteredCountries = this.state.allCountries.filter((country) => {
+      return country.filterName.includes(filteredLowerCase);
+    });
+
+    //prettier-ignore
+    const filteredPopulation =
+      this.calculateTotalPopulationFrom(filteredCountries);
+
+    this.setState({ filteredCountries, filteredPopulation });
   };
 
   render() {
-    const { allCountries, filter } = this.state;
+    const { filteredCountries, filteredPopulation, filter } = this.state;
     return (
       <div className="container">
-        <h1>React Countries</h1>
-        <Header filter={filter} onChangeFilter={this.handleChangeFilter} />
-        <Countries countries={allCountries} />
+        <h1 style={styles.centeredTitle}>React Countries</h1>
+        <Header
+          filter={filter}
+          countryCount={filteredCountries.length}
+          totalPopulation={filteredPopulation}
+          onChangeFilter={this.handleChangeFilter}
+        />
+        <Countries countries={filteredCountries} />
       </div>
     );
   }
 }
+const styles = { centeredTitle: { textAlign: 'center' } };
