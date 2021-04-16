@@ -1,0 +1,16 @@
+* {
+  margin: 10px;
+}
+.flexRow {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.avatar {
+  border-radius: 50%;
+  margin-right: 5px;
+  width: 80px;
+  height: 80px;
+}
