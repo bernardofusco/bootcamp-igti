@@ -1,14 +1,11 @@
 import mongoose from 'mongoose';
 
-await mongoose.connect(
-  'mongodb+srv://bernardofusco:be240588@cluster0.rxfwr.mongodb.net/grades?retryWrites=true&w=majority',
-  {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-    useFindAndModify: false,
-    useCreateIndex: true,
-  }
-);
+await mongoose.connect('<LINK_MONGODB_ATLAS>', {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+  useFindAndModify: false,
+  useCreateIndex: true,
+});
 
 const studentSchema = mongoose.Schema({
   name: { type: String, require: true },
