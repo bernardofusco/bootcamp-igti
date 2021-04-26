@@ -15,7 +15,6 @@ app.use(studentRouter);
       useFindAndModify: false,
       useCreateIndex: true,
     });
-    console.log('Conectei sim, seu fdp!');
   } catch (err) {
     console.log('MongoDB não conectado' + err);
   }
