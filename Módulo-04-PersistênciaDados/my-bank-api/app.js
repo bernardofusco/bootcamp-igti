@@ -9,15 +9,12 @@ app.use(bankRouter);
 
 {
   try {
-    await mongoose.connect(
-      'mongodb+srv://bernardofusco:be240588@cluster0.rxfwr.mongodb.net/bank?retryWrites=true&w=majority',
-      {
-        useNewUrlParser: true,
-        useUnifiedTopology: true,
-        useFindAndModify: false,
-        useCreateIndex: true,
-      }
-    );
+    await mongoose.connect('<LINK_MONGODB_ATLAS>', {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+      useFindAndModify: false,
+      useCreateIndex: true,
+    });
   } catch (err) {
     console.log('MongoDB não conectado' + err);
   }
